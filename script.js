@@ -1,5 +1,57 @@
 "use strict";
 
+const RANDOM_NAMES = [
+"Aaron","Abigail","Adam","Adrian","Aiden","Alan","Albert","Alec","Alexa","Alexander",
+"Alexis","Alice","Alicia","Alison","Allison","Amanda","Amber","Amelia","Amy","Andrea",
+"Andrew","Angela","Angelina","Anna","Anthony","Aria","Arthur","Ashley","Austin","Ava",
+"Barbara","Beatrice","Benjamin","Beth","Beverly","Bianca","Blake","Bradley","Brandon","Brenda",
+"Brian","Brianna","Brittany","Brooke","Bruce","Bryan","Caleb","Cameron","Cara","Carl",
+"Carla","Carlos","Carmen","Carol","Caroline","Carolyn","Carter","Catherine","Charles","Charlotte",
+"Chase","Chelsea","Cheryl","Chloe","Chris","Christian","Christina","Christine","Christopher","Claire",
+"Clara","Clarence","Cole","Colin","Connor","Courtney","Crystal","Curtis","Cynthia","Dakota",
+"Daniel","Danielle","David","Dawn","Dean","Deborah","Dennis","Derek","Derrick","Diana",
+"Dominic","Donna","Dylan","Edward","Elaine","Eleanor","Elena","Eli","Elijah","Elizabeth",
+"Ella","Ellen","Emily","Emma","Eric","Erica","Erik","Erin","Ethan","Eugene",
+"Eva","Evelyn","Faith","Felicia","Finn","Florence","Frances","Frank","Gabriel","Gail",
+"Gary","Gavin","George","Georgia","Gerald","Gina","Grace","Grant","Gregory","Hannah",
+"Harold","Harper","Hayden","Heather","Heidi","Helen","Henry","Holly","Hunter","Ian",
+"Isabella","Isaac","Jack","Jackson","Jacob","Jake","James","Jamie","Jane","Jared",
+"Jasmine","Jason","Jasper","Jayden","Jean","Jeffrey","Jenna","Jennifer","Jeremy","Jerry",
+"Jesse","Jessica","Joan","Joe","Joel","John","Johnny","Jonathan","Jordan","Joseph",
+"Joshua","Joyce","Juan","Judith","Julia","Julian","Julie","Justin","Kaitlyn","Karen",
+"Katherine","Kathleen","Kathryn","Kayla","Keith","Kelly","Kenneth","Kevin","Kimberly","Kyle",
+"Lance","Larry","Laura","Lauren","Leah","Leo","Leonard","Leslie","Levi","Liam",
+"Lillian","Linda","Lindsay","Lisa","Logan","Lori","Louis","Lucas","Lucy","Luke",
+"Madeline","Madison","Makayla","Marcus","Margaret","Maria","Marie","Marilyn","Marissa","Mark",
+"Martha","Martin","Mary","Mason","Matthew","Megan","Melanie","Melissa","Michael","Michelle",
+"Mila","Molly","Morgan","Nancy","Natalie","Nathan","Nathaniel","Neil","Nicholas","Nicole",
+"Noah","Nolan","Nora","Norman","Olivia","Owen","Pamela","Patricia","Patrick","Paul",
+"Paula","Peter","Philip","Rachel","Ralph","Randy","Raymond","Rebecca","Richard","Robert",
+"Robin","Roger","Ronald","Rose","Russell","Ruth","Ryan","Samantha","Samuel","Sandra",
+"Sara","Sarah","Scott","Sean","Shane","Shannon","Sharon","Shelby","Shirley","Sophia",
+"Spencer","Stacy","Stephanie","Stephen","Steven","Susan","Sydney","Tammy","Taylor","Teresa",
+"Terry","Thomas","Tiffany","Timothy","Todd","Tracy","Tristan","Tyler","Valerie","Vanessa",
+"Veronica","Victoria","Vincent","Virginia","Walter","Wayne","Wendy","William","Wyatt","Xavier",
+"Zachary","Zoe","Ariana","Ariel","Asher","Aspen","August","Aurora","Bella","Bentley",
+"Braxton","Brody","Caden","Callie","Cash","Colton","Cooper","Declan","Easton","Elias",
+"Emmett","Everly","Finnley","Gabriella","Grayson","Hadley","Hudson","Jaxon","Josiah","Kennedy",
+"Kingston","Kinsley","Landon","Lincoln","Mackenzie","Maddox","Paisley","Parker","Peyton","Quinn",
+"Riley","Rowan","Ryder","Sawyer","Skylar","Stella","Theodore","Violet","Weston","Willow",
+"Wren","Zane","Adelaide","Anastasia","Arabella","Blair","Brielle","Camilla","Cassidy","Celeste",
+"Cora","Delilah","Eliza","Eloise","Fiona","Freya","Genevieve","Hazel","Iris","Josephine",
+"Juliette","Lydia","Maeve","Penelope","Rosalie","Savannah","Serenity","Vivian","Autumn","Brooklyn",
+"Charlie","Daisy","Eden","Gemma","Juliana","Kendall","Liliana","Naomi","Phoebe","Reagan",
+"Sienna","Valentina","Zara"
+];
+
+const RANDOM_SURNAMES = [
+"Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez",
+"Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin",
+"Lee","Perez","Thompson","White","Harris","Sanchez","Clark","Ramirez","Lewis","Robinson",
+"Walker","Young","Allen","King","Wright","Scott","Torres","Nguyen","Hill","Flores",
+"Green","Adams","Nelson","Baker","Hall","Rivera","Campbell","Mitchell","Carter","Roberts"
+];
+
 const DATA = {
   dnd: {
     label: "D&D",
@@ -96,8 +148,15 @@ function populateControls() {
 
 function buildName() {
   const config = DATA[game];
-  const words = cleanWords(elements.name.value);
-  const originalFirst = titleCase(words[0] || pick(["Ari", "Jesse", "Rowan", "Morgan"]));
+  let inputName = elements.name.value.trim();
+
+  if (!inputName) {
+    inputName =
+        `${pick(RANDOM_NAMES)} ${pick(RANDOM_SURNAMES)}`;
+}
+
+  const words = cleanWords(inputName);
+  const originalFirst = titleCase(words[0]);
   const originalLast = titleCase(words.length > 1 ? words[words.length - 1] : "");
   const race = elements.randomRace.checked ? randomKey(config.races) : elements.race.value;
   const secondary = elements.randomClass.checked ? randomKey(config.secondary) : elements.secondary.value;
