@@ -131,25 +131,80 @@ function fragment(word,min,max){const clean=word.replace(/[^A-Za-z]/g,"");if(!cl
 function populateControls(){const c=DATA[game];elements.race.innerHTML=Object.keys(c.races).map(v=>`<option>${v}</option>`).join("");elements.secondary.innerHTML=Object.keys(c.secondary).map(v=>`<option>${v}</option>`).join("");elements.classLabel.textContent=c.secondaryLabel;elements.randomClass.parentElement.lastChild.textContent=` Random ${c.secondaryLabel.toLowerCase()}`;}
 function buildName(){
   const config=DATA[game];
-  // FIXED FALLBACK: if Original Name is blank, select a random first and last name.
+
+  // If the field is blank, create a random two-word seed.
+  // If the user enters one or more words, use only those words.
   let inputName=elements.name.value.trim();
   const usedRandomSeed=inputName.length===0;
-  if(usedRandomSeed){inputName=`${pick(RANDOM_FIRST_NAMES)} ${pick(RANDOM_SURNAMES)}`;}
+  if(usedRandomSeed){
+    inputName=`${pick(RANDOM_FIRST_NAMES)} ${pick(RANDOM_SURNAMES)}`;
+  }
+
   const words=cleanWords(inputName);
-  const originalFirst=titleCase(words[0]);
-  const originalLast=titleCase(words.length>1?words[words.length-1]:pick(RANDOM_SURNAMES));
+  const normalizedWords=words.map(titleCase);
   const race=elements.randomRace.checked?randomKey(config.races):elements.race.value;
   const secondary=elements.randomClass.checked?randomKey(config.secondary):elements.secondary.value;
-  const style=elements.style.value, raceData=config.races[race], secondaryData=config.secondary[secondary];
-  const settings={short:{min:2,max:3,firstCap:9,lastCap:11,titleChance:.62,surnameChance:.72},normal:{min:3,max:4,firstCap:12,lastCap:15,titleChance:.82,surnameChance:.9},epic:{min:4,max:5,firstCap:18,lastCap:22,titleChance:1,surnameChance:1}}[style];
-  const firstFrag=fragment(originalFirst,settings.min,settings.max), lastFrag=fragment(originalLast,settings.min,settings.max), prefix=pick(raceData.p), suffix=pick(raceData.s), connector=pick(secondaryData.c);
-  let firstPatterns;
-  if(style==="short")firstPatterns=[`${firstFrag}${suffix}`,`${prefix}${firstFrag}`,firstFrag,originalFirst];
-  else if(style==="normal")firstPatterns=[`${firstFrag}${suffix}`,`${prefix}${firstFrag}`,`${firstFrag}${connector}`,`${prefix}${firstFrag}${suffix}`,`${originalFirst}${suffix}`];
-  else firstPatterns=[`${prefix}${firstFrag}${suffix}`,`${firstFrag}${connector}${suffix}`,`${prefix}${originalFirst}`,`${originalFirst}${connector}`,`${prefix}${firstFrag}${connector}${suffix}`];
-  const fantasyFirst=clampWord(titleCase(pick(firstPatterns)),settings.firstCap), generatedSurname=pick(raceData.n), blendedSurname=Math.random()<.38?`${lastFrag}${pick(raceData.s)}`:generatedSurname, surname=Math.random()<settings.surnameChance?clampWord(blendedSurname,settings.lastCap):"", title=elements.includeTitle.checked&&Math.random()<settings.titleChance?pick(secondaryData.t):"";
-  const fullName=[fantasyFirst,surname,title?`, ${title}`:""].filter(Boolean).join(" ").replace(" ,",",");
-  return {fullName,game:config.label,race,secondary,style:titleCase(style),original:`${originalFirst} ${originalLast}`,usedRandomSeed};
+  const style=elements.style.value;
+  const raceData=config.races[race];
+  const secondaryData=config.secondary[secondary];
+  const settings={
+    short:{min:2,max:3,firstCap:9,middleCap:10,lastCap:11,titleChance:.62},
+    normal:{min:3,max:4,firstCap:12,middleCap:13,lastCap:15,titleChance:.82},
+    epic:{min:4,max:5,firstCap:18,middleCap:18,lastCap:22,titleChance:1}
+  }[style];
+
+  function transformGivenName(word,index){
+    const frag=fragment(word,settings.min,settings.max);
+    const prefix=pick(raceData.p);
+    const suffix=pick(raceData.s);
+    const connector=pick(secondaryData.c);
+    let patterns;
+    if(style==="short"){
+      patterns=[frag,`${frag}${suffix}`,`${prefix}${frag}`];
+    }else if(style==="normal"){
+      patterns=[`${frag}${suffix}`,`${prefix}${frag}`,`${frag}${connector}`,`${prefix}${frag}${suffix}`,`${word}${suffix}`];
+    }else{
+      patterns=[`${prefix}${frag}${suffix}`,`${frag}${connector}${suffix}`,`${prefix}${word}`,`${word}${connector}`,`${prefix}${frag}${connector}${suffix}`];
+    }
+    return clampWord(titleCase(pick(patterns)),index===0?settings.firstCap:settings.middleCap);
+  }
+
+  function transformLastName(word){
+    const frag=fragment(word,settings.min,settings.max);
+    const generatedRaceSurname=pick(raceData.n);
+    const patterns=style==="short"
+      ? [frag,`${frag}${pick(raceData.s)}`,generatedRaceSurname]
+      : [`${frag}${pick(raceData.s)}`,generatedRaceSurname,`${pick(raceData.p)}${frag}`];
+    return clampWord(titleCase(pick(patterns)),settings.lastCap);
+  }
+
+  let transformedWords=[];
+  if(normalizedWords.length===1){
+    // A provided single first name remains a single generated name.
+    // No random or race surname is added.
+    transformedWords=[transformGivenName(normalizedWords[0],0)];
+  }else{
+    // Support first, middle, and last names of any length.
+    // Every middle word is transformed instead of being discarded.
+    const first=transformGivenName(normalizedWords[0],0);
+    const middle=normalizedWords.slice(1,-1).map((word,index)=>transformGivenName(word,index+1));
+    const last=transformLastName(normalizedWords[normalizedWords.length-1]);
+    transformedWords=[first,...middle,last];
+  }
+
+  const title=elements.includeTitle.checked&&Math.random()<settings.titleChance?pick(secondaryData.t):"";
+  const baseName=transformedWords.join(" ");
+  const fullName=title?`${baseName}, ${title}`:baseName;
+
+  return {
+    fullName,
+    game:config.label,
+    race,
+    secondary,
+    style:titleCase(style),
+    original:normalizedWords.join(" "),
+    usedRandomSeed
+  };
 }
 function displayResult(r){currentResult=r;elements.output.textContent=r.fullName;const note=r.usedRandomSeed?` • Random seed: ${r.original}`:"";elements.details.textContent=`${r.game} • ${r.race} • ${r.secondary} • ${r.style}${note}`;elements.copy.disabled=false;elements.favorite.disabled=false;}
 function generate(){displayResult(buildName());}
