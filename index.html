@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17130f">
+  <meta name="description" content="Cross-platform fantasy name generator for D&D and Skyrim characters.">
+  <title>Fantasy Name Forge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <p class="eyebrow">Character Creator</p>
+      <h1>Fantasy Name Forge</h1>
+      <p class="subtitle">Turn a real name into a recognizable D&amp;D or Skyrim character name.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="generator-heading">
+      <div class="tabs" role="tablist" aria-label="Generator type">
+        <button class="tab active" id="dnd-tab" type="button" role="tab" aria-selected="true" aria-controls="generator-panel" data-game="dnd">D&amp;D</button>
+        <button class="tab" id="skyrim-tab" type="button" role="tab" aria-selected="false" aria-controls="generator-panel" data-game="skyrim">Skyrim</button>
+      </div>
+
+      <div id="generator-panel" role="tabpanel" aria-labelledby="dnd-tab">
+        <h2 id="generator-heading" class="sr-only">Name generator controls</h2>
+
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>Original name</span>
+            <input id="originalName" type="text" maxlength="60" autocomplete="name" placeholder="Example: Jesse Lewis">
+          </label>
+
+          <label class="field">
+            <span id="raceLabel">Race</span>
+            <select id="race"></select>
+          </label>
+
+          <label class="field">
+            <span id="classLabel">Class</span>
+            <select id="characterClass"></select>
+          </label>
+
+          <label class="field">
+            <span>Name style</span>
+            <select id="nameStyle">
+              <option value="short">Short</option>
+              <option value="normal" selected>Normal</option>
+              <option value="epic">Epic</option>
+            </select>
+          </label>
+
+          <fieldset class="options">
+            <legend>Options</legend>
+            <label><input id="randomRace" type="checkbox"> Random race</label>
+            <label><input id="randomClass" type="checkbox"> Random class</label>
+            <label><input id="includeTitle" type="checkbox" checked> Include title</label>
+          </fieldset>
+        </div>
+
+        <button id="generateButton" class="primary-button" type="button">Generate name</button>
+
+        <section class="result-card" aria-live="polite" aria-atomic="true">
+          <p class="result-label">Generated character</p>
+          <h2 id="generatedName">Your name will appear here</h2>
+          <p id="generatedDetails" class="details">Choose your options and press Generate name.</p>
+          <div class="result-actions">
+            <button id="copyButton" class="secondary-button" type="button" disabled>Copy</button>
+            <button id="favoriteButton" class="secondary-button" type="button" disabled>Add favorite</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel favorites-panel" aria-labelledby="favorites-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Saved locally</p>
+          <h2 id="favorites-heading">Favorites</h2>
+        </div>
+        <button id="clearFavorites" class="text-button" type="button">Clear all</button>
+      </div>
+      <ul id="favoritesList" class="favorites-list"></ul>
+      <p id="emptyFavorites" class="empty-state">No favorites saved yet.</p>
+    </section>
+
+    <footer>
+      <p>Runs entirely in your browser. No names are uploaded or stored online.</p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
